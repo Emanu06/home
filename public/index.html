@@ -5,254 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Manager Pro Ultimate</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-    <div class="app-container">
-        <nav class="sidebar">
-            <div class="logo">
-                <i class="fas fa-home"></i> <span>MyHome</span>
+    <div id="login-screen" class="login-wrapper">
+        <div class="login-visual">
+            <div class="visual-content">
+                <h1>Sincronize sua casa.</h1>
+                <p>Tarefas, agenda, estoque e finanças em tempo real.</p>
             </div>
-            <div class="user-mini-profile">
-                <img id="nav-user-photo" src="https://via.placeholder.com/50" alt="User">
-                <div>
-                    <span id="nav-user-name">Usuário</span>
-                    <small>Gerenciador</small>
+            <div class="visual-overlay"></div>
+            <img src="https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&q=80" class="bg-image">
+        </div>
+        <div class="login-form-container">
+            <div class="login-content">
+                <div class="logo-text"><i class="fas fa-home"></i> MyHome</div>
+                <h2>Bem-vindo</h2>
+             <button id="btn-google-login" class="btn-google">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google"> 
+    Entrar com Google
+</button>
+                <p id="login-error" class="error-msg"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="app-container" style="display: none;">
+        
+        <nav class="sidebar">
+            <div class="logo-area"><i class="fas fa-bolt"></i> <span>MyHome</span></div>
+            
+            <div class="user-profile-widget" onclick="window.showSection('profile')" title="Meu Perfil">
+                <img id="nav-user-photo" src="https://via.placeholder.com/50" alt="Foto">
+                <div class="user-info">
+                    <span id="nav-user-name">...</span>
+                    <small>Editar Perfil</small>
                 </div>
             </div>
+
             <ul class="nav-links">
-                <li onclick="showSection('home')" class="active"><i class="fas fa-chart-pie"></i> Dashboard</li>
-                <li onclick="showSection('tasks')"><i class="fas fa-check-circle"></i> Tarefas</li>
-                <li onclick="showSection('shopping')"><i class="fas fa-shopping-basket"></i> Compras</li>
-                <li onclick="showSection('calendar')"><i class="fas fa-calendar-day"></i> Agenda</li>
-                <li onclick="showSection('pantry')"><i class="fas fa-utensils"></i> Estoque & Chef</li>
-                <li onclick="showSection('profile')"><i class="fas fa-user-circle"></i> Perfil & Dados</li>
+                <li onclick="window.showSection('home')" class="active"><i class="fas fa-chart-pie"></i> Dashboard</li>
+                <li onclick="window.showSection('tasks')"><i class="fas fa-check-square"></i> Tarefas</li>
+                <li onclick="window.showSection('shopping')"><i class="fas fa-shopping-cart"></i> Compras</li>
+                <li onclick="window.showSection('calendar')"><i class="fas fa-calendar"></i> Agenda</li>
+                <li onclick="window.showSection('pantry')"><i class="fas fa-box"></i> Estoque</li>
+                <li onclick="window.showSection('profile')"><i class="fas fa-user-circle"></i> Perfil</li>
+                
+                <li id="menu-admin" onclick="window.showSection('admin-users')" style="display: none; color: #fab1a0;">
+                    <i class="fas fa-users-cog"></i> Gestão Admin
+                </li>
             </ul>
-            
-            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                <ul class="nav-links">
-                    <li onclick="toggleDarkMode()"><i class="fas fa-moon"></i> Modo Escuro</li>
-                </ul>
+
+            <div class="sidebar-footer">
+                <button onclick="window.logoutFirebase()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</button>
             </div>
         </nav>
 
         <main class="content">
             
             <section id="home" class="section active-section">
-                <header class="section-header">
-                    <h2>Visão Geral</h2>
-                    <p>Resumo inteligente da sua casa.</p>
-                </header>
+                <header class="header-title"><h2>Visão Geral</h2></header>
                 <div class="dashboard-grid">
-                    <div class="card highlight">
-                        <h3><i class="fas fa-exclamation-circle"></i> Prioridade Alta</h3>
-                        <ul id="home-urgent-list" class="simple-list"></ul>
+                    <div class="card agenda-card">
+                        <h3><i class="far fa-clock"></i> Próximos Eventos</h3>
+                        <div id="home-agenda-list" class="empty-state">Carregando...</div>
                     </div>
-                    
-                    <div class="card financial" style="grid-column: span 2;">
-                        <h3><i class="fas fa-chart-line"></i> Evolução de Gastos (Últimos Itens)</h3>
-                        <div style="height: 200px; position: relative;">
-                            <canvas id="spendingChart"></canvas>
-                        </div>
+                    <div class="card urgent-card">
+                        <h3><i class="fas fa-fire"></i> Urgentes</h3>
+                        <ul id="home-urgent-list" class="clean-list"></ul>
                     </div>
-
-                    <div class="card recipe-spotlight">
-                        <h3><i class="fas fa-hat-chef"></i> Dica do Chef</h3>
-                        <div id="home-recipe-display">Carregando...</div>
-                    </div>
-                    <div class="card alert-stock">
-                        <h3><i class="fas fa-shopping-cart"></i> Alertas / Validade</h3>
-                        <ul id="home-low-stock-list" class="simple-list"></ul>
+                    <div class="card chart-card">
+                        <h3><i class="fas fa-chart-line"></i> Finanças (7 dias)</h3>
+                        <div class="chart-container"><canvas id="spendingChart"></canvas></div>
                     </div>
                 </div>
             </section>
 
             <section id="tasks" class="section">
-                <header class="section-header">
-                    <h2>Tarefas Domésticas</h2>
-                </header>
-                <div class="interaction-bar">
-                    <input type="text" id="task-input" placeholder="Nova tarefa (ex: Limpar janelas)">
-                    <select id="task-priority">
-                        <option value="Normal">Normal</option>
-                        <option value="Importante">Importante</option>
-                    </select>
-                    <button class="btn-primary" onclick="addTask()"><i class="fas fa-plus"></i> Adicionar</button>
-                </div>
-                <ul id="task-list" class="list-container"></ul>
-            </section>
-
-            <section id="shopping" class="section">
-                <header class="section-header">
-                    <h2>Lista de Compras</h2>
-                    <p>Organize suas compras por categoria.</p>
-                </header>
-                
-                <input type="text" onkeyup="filterList('shopping-list', this.value)" placeholder="🔍 Filtrar lista..." class="search-bar">
-
-                <div class="interaction-bar">
-                    <button class="btn-icon" onclick="startVoice('shopping')" title="Falar item" style="background:#e84393; margin-right:5px;"><i class="fas fa-microphone"></i></button>
-
-                    <input list="grocery-items" id="shopping-input" placeholder="Item...">
-                    <datalist id="grocery-items">
-                        <option value="Arroz"><option value="Feijão"><option value="Leite"><option value="Ovos">
-                        <option value="Frango"><option value="Carne"><option value="Detergente"><option value="Sabão">
-                    </datalist>
-                    
-                    <select id="shopping-category">
-                        <option value="Geral">Geral</option>
-                        <option value="Hortifruti">Hortifruti</option>
-                        <option value="Carnes">Carnes</option>
-                        <option value="Limpeza">Limpeza</option>
-                        <option value="Padaria">Padaria</option>
-                        <option value="Bebidas">Bebidas</option>
-                    </select>
-
-                    <button class="btn-primary" onclick="addShoppingItem()"><i class="fas fa-plus"></i></button>
-                    
-                    <button class="btn-primary" onclick="shareOnWhatsapp()" style="background-color: #25D366; margin-left: 5px;">
-                        <i class="fab fa-whatsapp"></i>
-                    </button>
-                </div>
-                <ul id="shopping-list" class="list-container"></ul>
-            </section>
-
-            <section id="calendar" class="section">
-                <header class="section-header">
-                    <h2>Agenda</h2>
-                </header>
-                <div class="form-card">
-                    <div class="row">
-                        <input type="text" id="event-desc" placeholder="Título do Evento">
-                        <select id="event-priority">
+                <header class="header-title"><h2>Tarefas</h2></header>
+                <div class="input-card">
+                    <div class="input-row">
+                        <input type="text" id="task-input" placeholder="Nova tarefa...">
+                        <select id="task-assignee" class="select-user"><option value="Todos">Todos</option></select>
+                        <select id="task-priority" class="select-prio">
                             <option value="Normal">Normal</option>
                             <option value="Importante">Importante</option>
                         </select>
+                        <button class="btn-primary" onclick="window.addTaskFirebase()">Salvar</button>
                     </div>
-                    <div class="row">
+                </div>
+                <div id="task-list" class="task-grid"></div>
+            </section>
+
+            <section id="shopping" class="section">
+                <header class="header-title"><h2>Compras</h2></header>
+                <div class="input-card">
+                    <div class="input-row">
+                        <button class="btn-icon" onclick="window.startVoice('shopping')" title="Falar item"><i class="fas fa-microphone"></i></button>
+                        <input type="text" id="shopping-input" placeholder="Item...">
+                        <select id="shopping-category">
+                            <option value="Geral">Geral</option>
+                            <option value="Hortifruti">Hortifruti</option>
+                            <option value="Carnes">Carnes</option>
+                            <option value="Limpeza">Limpeza</option>
+                            <option value="Bebidas">Bebidas</option>
+                        </select>
+                        <button class="btn-primary" onclick="window.addShoppingItem()">Adicionar</button>
+                        <button class="btn-whatsapp" onclick="window.shareOnWhatsapp()"><i class="fab fa-whatsapp"></i></button>
+                    </div>
+                </div>
+                <ul id="shopping-list" class="shopping-list-container"></ul>
+            </section>
+
+            <section id="calendar" class="section">
+                <header class="header-title"><h2>Agenda</h2></header>
+                <div class="input-card">
+                    <div class="input-row">
+                        <input type="text" id="event-desc" placeholder="Evento">
+                    </div>
+                    <div class="input-row">
                         <input type="datetime-local" id="event-time">
                         <input type="text" id="event-loc" placeholder="Local">
+                        <button class="btn-primary" onclick="window.addEventFirebase()">Agendar</button>
                     </div>
-                    <button class="btn-primary full-width" onclick="addEvent()">Agendar</button>
                 </div>
-                <div id="event-list" class="grid-container"></div>
+                <div id="event-list" class="events-container"></div>
             </section>
 
             <section id="pantry" class="section">
-                <div class="split-view">
-                    <div class="pantry-column">
-                        <h2>Estoque</h2>
-                        <input type="text" onkeyup="filterList('pantry-list', this.value)" placeholder="🔍 Buscar..." class="search-bar">
+                <header class="header-title"><h2>Estoque</h2></header>
+                <div class="input-card">
+                    <div class="input-row">
+                        <input type="text" id="pantry-item" placeholder="Item (ex: Arroz)">
+                        
+                        <input type="number" id="pantry-qty" placeholder="Qtd" style="max-width: 80px;">
+                        
+                        <select id="pantry-unit" style="max-width: 90px;">
+                            <option value="un">un</option>
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="L">L</option>
+                            <option value="ml">ml</option>
+                            <option value="cx">cx</option>
+                            <option value="pct">pct</option>
+                        </select>
 
-                        <div class="interaction-bar compact">
-                            <input type="text" id="pantry-item" placeholder="Item">
-                            <input type="number" id="pantry-qty" placeholder="Qtd" style="width: 50px;">
-                            <select id="pantry-unit" style="width: 60px;">
-                                <option value="un">un</option>
-                                <option value="kg">kg</option>
-                                <option value="g">g</option>
-                                <option value="L">L</option>
-                            </select>
-                            <select id="pantry-category" style="width: 80px;">
-                                <option value="Geral">Geral</option>
-                                <option value="Hortifruti">Horti</option>
-                                <option value="Carnes">Carnes</option>
-                                <option value="Limpeza">Limp</option>
-                                <option value="Padaria">Padaria</option>
-                            </select>
-                            <input type="date" id="pantry-expiry" title="Validade" style="width: 110px;">
-                            <button class="btn-icon" onclick="addPantryItem()"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <ul id="pantry-list" class="list-container scrollable-list"></ul>
-                    </div>
-
-                    <div class="chef-column">
-                        <h2>ChefBot AI <i class="fas fa-robot"></i></h2>
-                        <div class="chat-window" id="chat-window">
-                            <div class="message bot">
-                                <p>Olá! Posso sugerir receitas com base no seu estoque.</p>
-                            </div>
-                        </div>
-                        <button class="btn-action" onclick="askChef()"><i class="fas fa-magic"></i> Sugerir Receita</button>
+                        <button class="btn-primary" onclick="window.addPantryItem()">Salvar</button>
                     </div>
                 </div>
-
-                <div class="form-card" style="margin-top: 30px; border-top: 4px solid var(--accent-green);">
-                    <h3><i class="fas fa-plus-circle"></i> Cadastrar Nova Receita</h3>
-                    <div class="row">
-                        <div class="col">
-                            <label>Nome do Prato</label>
-                            <input type="text" id="new-recipe-name" placeholder="Ex: Panqueca Americana">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <label>Ingredientes (separados por vírgula)</label>
-                            <input type="text" id="new-recipe-ings" placeholder="Ex: farinha, leite, ovos">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <label>Modo de Preparo</label>
-                            <textarea id="new-recipe-steps" rows="3" style="width:100%; padding:10px; border:1px solid #dfe6e9; border-radius:8px;" placeholder="Descreva como fazer..."></textarea>
-                        </div>
-                    </div>
-                    <button class="btn-primary" onclick="addCustomRecipe()" style="background-color: var(--accent-green);">Salvar Receita</button>
-                </div>
+                <ul id="pantry-list" class="pantry-grid"></ul>
             </section>
 
             <section id="profile" class="section">
-                <header class="section-header">
-                    <h2>Editar Perfil</h2>
-                </header>
-                <div class="profile-card">
+                <header class="header-title"><h2>Meu Perfil</h2></header>
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
                     <div style="text-align: center; margin-bottom: 20px;">
-                        <img id="profile-preview" src="https://via.placeholder.com/100" 
-                             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
+                        <img id="profile-preview-large" src="https://via.placeholder.com/100" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #6366f1; margin-bottom: 10px;">
+                        <br>
+                        <input type="file" id="profile-file-input" accept="image/*" style="display: none;" onchange="window.handleProfileImageSelect(this)">
+                        <button onclick="document.getElementById('profile-file-input').click()" style="background: #e0e7ff; border: none; padding: 5px 10px; border-radius: 5px; color: #4338ca; cursor: pointer; font-size: 0.9rem;">
+                            <i class="fas fa-camera"></i> Alterar Foto
+                        </button>
                     </div>
+                    <div class="input-row" style="flex-direction: column; gap: 15px;">
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">Nome de Exibição</label>
+                            <input type="text" id="profile-name-input" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.9rem; color: #666;">E-mail (Login)</label>
+                            <input type="text" id="profile-email-readonly" readonly style="width: 100%; background: #f0f0f0; color: #999;">
+                        </div>
+                        <button class="btn-primary" onclick="window.saveProfileFirebase()" style="width: 100%; margin-top: 10px;">Salvar Alterações</button>
+                    </div>
+                </div>
+            </section>
 
-                    <div class="row">
-                        <div class="col">
-                            <label>Nome</label>
-                            <input type="text" id="profile-name">
-                        </div>
-                        <div class="col">
-                            <label>Escolher Foto</label>
-                            <input type="file" id="profile-photo-file" accept="image/*">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <label>Data Nasc.</label>
-                            <input type="date" id="profile-dob">
-                        </div>
-                        <div class="col">
-                            <label>Gênero</label>
-                            <select id="profile-gender">
-                                <option value="Masculino">Masculino</option>
-                                <option value="Feminino">Feminino</option>
-                                <option value="Outro">Outro</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button class="btn-primary full-width" onclick="saveProfile()">Salvar Perfil</button>
-
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <h3 style="margin-bottom:15px; font-size:1.1rem;">Gestão de Dados</h3>
-                        <div class="row">
-                            <button class="btn-primary" onclick="downloadData()" style="background-color: #2d3436; flex:1;">⬇️ Backup</button>
-                            <button class="btn-primary" onclick="document.getElementById('upload-file').click()" style="background-color: #00b894; flex:1;">⬆️ Restaurar</button>
-                            <input type="file" id="upload-file" style="display:none" onchange="uploadData(this)">
-                        </div>
-                    </div>
+            <section id="admin-users" class="section">
+                <header class="header-title"><h2>Gestão de Usuários</h2></header>
+                <div class="card">
+                    <p style="margin-bottom: 15px; color: #666;">Usuários com acesso ao sistema:</p>
+                    <ul id="admin-user-list" class="clean-list"></ul>
                 </div>
             </section>
 
         </main>
     </div>
+
     <script src="script.js"></script>
+    <script type="module" src="firebase-config.js"></script>
 </body>
 </html>

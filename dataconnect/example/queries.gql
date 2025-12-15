@@ -1,0 +1,48 @@
+mutation AddNewChore($name: String!, $dueDate: Date!, $status: String!, $assignedToId: UUID, $householdId: UUID, $description: String, $recurrence: String) @auth(level: USER) {
+  chore_insert(data: {
+    name: $name,
+    dueDate: $dueDate,
+    status: $status,
+    assignedToId: $assignedToId,
+    householdId: $householdId,
+    description: $description,
+    recurrence: $recurrence
+  }) {
+    id
+  }
+}
+
+query GetChoresForHousehold($householdId: UUID!) @auth(level: USER) {
+  chores(where: {householdId: {eq: $householdId}}) {
+    id
+    name
+    description
+    dueDate
+    status
+    assignedTo {
+      id
+      displayName
+    }
+  }
+}
+
+mutation UpdateShoppingListItem($id: UUID!, $purchased: Boolean) @auth(level: USER) {
+  shoppingListItem_update(
+    id: $id,
+    data: {
+      purchased: $purchased
+    }
+  ) {
+    id
+  }
+}
+
+query GetShoppingListItemsForList($shoppingListId: UUID!) @auth(level: USER) {
+  shoppingListItems(where: {shoppingListId: {eq: $shoppingListId}}) {
+    id
+    itemName
+    quantity
+    purchased
+    notes
+  }
+}

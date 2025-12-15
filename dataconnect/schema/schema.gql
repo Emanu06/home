@@ -1,0 +1,59 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  household: Household
+}
+
+type Household @table {
+  name: String!
+  createdAt: Timestamp!
+  description: String
+}
+
+type Expense @table {
+  amount: Float!
+  description: String!
+  date: Date!
+  category: String!
+  notes: String
+  user: User
+  household: Household
+}
+
+type Chore @table {
+  name: String!
+  dueDate: Date!
+  status: String!
+  description: String
+  recurrence: String
+  household: Household
+  assignedTo: User
+}
+
+type InventoryItem @table {
+  name: String!
+  quantity: Int!
+  location: String!
+  description: String
+  purchaseDate: Date
+  expirationDate: Date
+  household: Household
+}
+
+type ShoppingList @table {
+  name: String!
+  createdAt: Timestamp!
+  description: String
+  household: Household
+  user: User
+}
+
+type ShoppingListItem @table {
+  itemName: String!
+  quantity: Int!
+  purchased: Boolean!
+  notes: String
+  shoppingList: ShoppingList
+}
